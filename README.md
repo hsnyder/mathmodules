@@ -1,6 +1,6 @@
 # mathmodules
 
-A collection of modules for building mathematical software, mostly in fortran.
+A collection of modules for building mathematical software (in particular numerical physics programs), mostly in fortran.
 
 ## Make target: quadrature.o
 
