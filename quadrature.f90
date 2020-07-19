@@ -61,6 +61,8 @@ double precision pure recursive function DDLegendre(n,x) result(returnval)
 end function
 
 ! Gauss-Legendre quadrature points (Roots of Legendre polynomial of order N)
+! You may need to make the "accuracy" variable larger for a large number of points, 
+! or the root finder may not converge
 subroutine GL_Points(pts)
     double precision, intent(inout) :: pts(:)
     double precision, parameter :: accuracy = 1.0d-15
@@ -97,6 +99,8 @@ end subroutine GL_Points
 
 ! Gauss-Legendre-Lobatto quadrature points (Roots of Legendre polynomial derivative of order N-1,
 ! plus 1 and -1).
+! You may need to make the "accuracy" variable larger for a large number of points, 
+! or the root finder may not converge
 subroutine GLL_Points(pts)
     double precision, intent(inout) :: pts(:)
     double precision, parameter :: accuracy = 1.0d-15
@@ -122,6 +126,8 @@ subroutine GLL_Points(pts)
 
 end subroutine GLL_Points
 
+
+! Gauss-Legendre quadrature weights. 
 subroutine GL_Weights(pts, wghts)
     double precision, intent(in) :: pts(:)
     double precision, intent(inout) :: wghts(:)
@@ -135,7 +141,7 @@ subroutine GL_Weights(pts, wghts)
 
 end subroutine
 
-
+! Gauss-Legendre-Lobatto quadrature weights
 subroutine GLL_Weights(pts, wghts)
     double precision, intent(in) :: pts(:)
     double precision, intent(inout) :: wghts(:)
@@ -149,7 +155,7 @@ subroutine GLL_Weights(pts, wghts)
 
 end subroutine
 
-! value of the i-th Lagrange polynomial on the [-1,1] domain at point x
+! value of the i-th Lagrange interpolating polynomial on the [-1,1] domain at point x
 ! gx are the quadrature points
 double precision pure function Lagrange(gx, i, x)
     double precision, intent(in) :: gx(:), x
@@ -165,7 +171,7 @@ double precision pure function Lagrange(gx, i, x)
     Lagrange = prod
 end function 
 
-! value of the derivative of the i-th Lagrange polynomial on the [-1,1] domain at point x
+! value of the derivative of the i-th Lagrange interpolating polynomial on the [-1,1] domain at point x
 ! gx are the quadrature points
 ! Calculation takes advantage of log differentiation, f'/f = log(f)'
 double precision pure function DLagrange(gx,i,x)

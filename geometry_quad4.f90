@@ -6,6 +6,9 @@ module geometry
 
 contains
 
+
+    ! Computes the mapping coefficients to go from a square [-1,1]^2 domain to a straight sided deformed quadrilateral
+    ! Provide the vertices of the deformed quad as an input.
     subroutine ComputeMapCoefs(vertices, coeffs)
         double precision, intent(in) :: vertices(4,2)
         double precision, intent(out) :: coeffs(4,2)
@@ -35,6 +38,9 @@ contains
 
     end subroutine
 
+    ! Given mapping coefficients (from the above function) and a point in the deformed quadrilateral,
+    ! get the corresponding point in the reference square. 
+    ! All bets are off if the point p isn't inside the deformed quad. 
     pure function MapRealToReference(co, p) result(res)
         double precision, intent(in) :: co(4,2), p(2)
         double precision:: res(2)
@@ -55,6 +61,13 @@ contains
         
     end function MapRealToReference
 
+
+    !-------------------------------------------------------------------------------
+    !   For these functions, r and s are the coordinate axes in the refence square
+    !   and x,y are the coordinates in the deformed quad.
+    !-------------------------------------------------------------------------------
+   
+    ! derivative dx/dr, evaluated at point p, given the mapping coefficients co 
     pure function dxdr (co, p) result(res)
         double precision, intent(in) :: co(4,2) , p(2) 
         double precision  :: res, r, s 
@@ -63,6 +76,7 @@ contains
         res = (co(2,1) + co(4,1)*s)
     end function
 
+    ! derivative dy/ds, evaluated at point p, given the mapping coefficients co 
     pure function dyds (co, p) result(res)
         double precision, intent(in) :: co(4,2) , p(2) 
         double precision  :: res, r, s 
@@ -71,6 +85,7 @@ contains
         res = (co(3,2) + co(4,2)*r)
     end function
 
+    ! derivative dx/ds, evaluated at point p, given the mapping coefficients co 
     pure function dxds (co, p) result(res)
         double precision, intent(in) :: co(4,2) , p(2) 
         double precision  :: res, r, s 
@@ -79,6 +94,7 @@ contains
         res = (co(3,1) + co(4,1)*r)
     end function
 
+    ! derivative dy/dr, evaluated at point p, given the mapping coefficients co 
     pure function dydr (co, p) result(res)
         double precision, intent(in) :: co(4,2) , p(2) 
         double precision  :: res, r, s 
@@ -90,7 +106,7 @@ contains
 
         
 
-    ! Jacobian determinant
+    ! Jacobian determinant of the mapping from the reference square to the deformed quad
     ! p=(r,s) are the x,y vars in the reference domain [-1,1]x[-1,1]
     ! co are the coefficients from ComputeMapCoefs
     pure function Jac(co, p)
@@ -98,6 +114,31 @@ contains
         double precision :: Jac
         Jac = dxdr(co,p) * dyds(co,p)  -  dydr(co,p) * dxds(co,p)
     end function
+
+
+
+    subroutine CalcJacDet(Np,co,gx,JacDet)
+        integer, intent(in) :: Np
+        double precision, intent(in)  :: co(:,:), gx(Np)
+        double precision, intent(out) :: JacDet(Np,Np)
+        integer :: i, j
+        ! Construct Jacobian (dx/dr dy/ds - dx/ds dy/dr) for reference domain components r,s
+        ! This isn't an actual jacobian, it's a matrix, to be multiplied elementwise into M
+        ! where J_km is the value at each node in the local element for the Jacobian determinant. 
+        do j = 1, Np
+            JacDet(:,j) = [(  Jac(co(:,:), [gx(i), gx(j)])  , i=1, Np  )]
+        end do
+    end subroutine 
+
+
+
+     
+    !-------------------------------------------------------------------------------
+    !   These functions operate on a 2d quad mesh structure that I haven't 
+    !   yet included in this library. As such, GitHub viewer who stumble across 
+    !   this repository will likely have a hard time using these methods at present.
+    !-------------------------------------------------------------------------------
+
 
     pure function IsLeft(p0,p1,p2) ! returns > 0 if p2 is left of the line through p0,p1, <0 if it's to the right, 0 if it's on the line
         double precision, intent(in) :: p0(2), p1(2), p2(2)
@@ -238,20 +279,6 @@ contains
 
     end subroutine  
 
-
-    subroutine CalcJacDet(Np,co,gx,JacDet)
-        integer, intent(in) :: Np
-        double precision, intent(in)  :: co(:,:), gx(Np)
-        double precision, intent(out) :: JacDet(Np,Np)
-        integer :: i, j
-        ! Construct Jacobian (dx/dr dy/ds - dx/ds dy/dr) for reference domain components r,s
-        ! This isn't an actual jacobian, it's a matrix, to be multiplied elementwise into M
-        ! where J_km is the value at each node in the local element for the Jacobian determinant. 
-        do j = 1, Np
-            JacDet(:,j) = [(  Jac(co(:,:), [gx(i), gx(j)])  , i=1, Np  )]
-        end do
-    end subroutine 
-
-    
+   
 
 end module
